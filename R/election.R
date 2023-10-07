@@ -103,7 +103,7 @@ election <- setRefClass("election", fields = list(city_name = "character", kpi =
                             
                           },
                           participation_rate = function(){
-                            return(participation_rate_data)
+                            return(as.data.frame(participation_rate_data))
                           },
                           political_party = function(){
                             return(political_party_data)
