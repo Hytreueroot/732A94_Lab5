@@ -1,0 +1,116 @@
+#' Election in Sweden
+#'
+#' @description
+#' Votes for the different parties in the election in Sweden.
+#' Also, first-time voters who voted in the election to the Riksdag.
+#' Voter turnout in the parliamentary election. 
+#' 
+#'
+#' @field city_name character. 
+#' @field kpi character. 
+#' @field id character. 
+#' @field year character. 
+#' @field participation_rate_data data.frame. 
+#' @field political_party_data data.frame. 
+#' @field first_vote_data data.frame. 
+#'
+#' @param city_name object of class 'election': search the result of election according to city.
+#'
+#' @return Returns an object of class 'election'. 
+#' 
+#' @examples
+#' el_object <- election("Stockholm")
+#' el_object$participation_rate()
+#' el_object$political_party()
+#' el_object$first_vote()
+#' 
+#' @importFrom methods new
+#' @importFrom httr GET
+#' @importFrom jsonlite fromJSON
+#' 
+#' @exportClass election
+#' @export election
+
+election <- setRefClass("election", fields = list(city_name = "character", kpi = "character", id = "character", year = "character",
+                                                  participation_rate_data = "data.frame", political_party_data = "data.frame",
+                                                  first_vote_data = "data.frame"),
+                        methods = list(
+                          initialize = function(city_name){
+                            library(httr)
+                            library(jsonlite)
+                            
+                            city_name <<- city_name
+                            stopifnot(is.character(city_name))
+                            
+                            
+                            kpi <<- c("N65841,N65842,N65843,N65844,N65845,N65846,N65847,N65848,N65849,U17410,N05403")
+                            id <<- c(Stockholm="0180", Uppsala="0380", Malmo="1280", Gothenburg="1480")
+                            year <<- c("1998,2002,2006,2010,2014,2018,2022")
+                            
+                            stopifnot(city_name %in% names(id))
+                            
+                            url1 <- paste0("https://api.kolada.se/v2/data/kpi/",kpi,"/municipality/",id[[city_name]],"/year/",year)
+                            
+                            response <- httr::GET(url = url1)
+                            city_all_data <- jsonlite::fromJSON(rawToChar(response$content))
+                            
+                            df <- data.frame(city_all_data$values["kpi"], city_all_data$values["period"], city_all_data$values["municipality"], city_all_data$values["values"])
+                            
+                            df_with_gender <- df[df["kpi"]=="U17410",]
+                            rownames(df_with_gender) <- NULL  # reset row names
+                            
+                            
+                            df_without_gender <- df[!(df["kpi"]=="U17410"),]
+                            rownames(df_with_gender) <- NULL  
+                            
+                            
+                            for (i in 1:nrow(df_without_gender)){
+                              df_without_gender$values[[i]] <- df_without_gender$values[[i]]$value
+                            }
+                            
+                            # Political Party Data
+                            political_party_data <<- data.frame()
+                            
+                            for (i in 1:9){
+                              subsett <- subset(df_without_gender, df_without_gender["kpi"] == paste0("N6584",i))
+                              political_party_data <<- rbind(political_party_data, subsett)
+                            }
+                            rownames(political_party_data) <<- NULL
+                            
+                            
+                            # Participation Rate Data
+                            
+                            participation_rate_data <<- df_without_gender[(df_without_gender["kpi"]=="N05403"),]
+                            
+                            for (i in 1:nrow(participation_rate_data)){
+                              participation_rate_data$values[[i]] <<- tail(participation_rate_data$values[[i]], n=1)
+                            }
+                            
+                            rownames(participation_rate_data) <<- NULL
+                            
+                            # First Vote Data
+                            
+                            sub_df_values <- df_with_gender$values 
+                            first_vote_data <<- df_with_gender
+                            
+                            for (i in 1:nrow(first_vote_data)){
+                              ilk <- sub_df_values[[i]]
+                              first_vote_data$female[[i]] <<- ilk[(ilk[, "gender"]=="K"), "value"]
+                              first_vote_data$male[[i]] <<- ilk[(ilk[, "gender"]=="M"), "value"]
+                              first_vote_data$values[[i]] <<- tail(first_vote_data$values[[i]]$value, n=1)
+                            }
+                            
+                            
+                          },
+                          participation_rate = function(){
+                            return(participation_rate_data)
+                          },
+                          political_party = function(){
+                            return(political_party_data)
+                          },
+                          first_vote = function(){
+                            return(first_vote_data)
+                          }
+                          
+                        )
+)
