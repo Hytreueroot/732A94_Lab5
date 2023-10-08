@@ -1,0 +1,41 @@
+---
+title: "Election in Sweden"
+author: "SILA KILICOGLU (silki753@student.liu.se) and SAMI FURKAN YILDIRIM (samyi572@student.liu.se)"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Election in Sweden}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+## **Description**
+
+## **Import**
+```{r setup}
+library(httr)
+library(jsonlite)
+library(election)
+```
+## **Arguments**
+_city_name_
+:
+
+## **Methods**
+* _participation_rate()_
+:
+
+* _political_party()_
+:
+
+* _first_vote()_
+:
+
+***********************
+## An Example of Usage
