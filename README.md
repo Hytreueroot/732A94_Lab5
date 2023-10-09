@@ -1,6 +1,10 @@
 # 732A94_Lab5
 This package is made for 732A94 Advanced Programming in R course.
 
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/Hytreueroot/732A94_Lab5/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Hytreueroot/732A94_Lab5/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
+
 ## Description
 The package provides data sets on various election results by municipalities in Sweden (Stockholm, Uppsala, Malmö, Göthenburg). The data was called from [Kolada](https://www.kolada.se/) with using web API.
 
